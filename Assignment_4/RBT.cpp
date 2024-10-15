@@ -47,7 +47,7 @@ private:
         // Does not enter the loop if node is root or it's parent is black
         while (node -> parent && node -> parent -> colour == Red) {
             if (node -> parent == node -> parent -> parent -> left) {
-                RBTNode *uncle = node -> parent -> parent -> right;
+                RBTNode *uncle = node -> parent -> parent -> right; // Uncle in right
                 // If uncle is red, recolour and if node's grandparent is not root, recolour and recheck
                 if (uncle && uncle -> colour == Red) {
                     node -> parent -> colour = Black;
@@ -67,7 +67,7 @@ private:
                 }
             } 
             else {
-                RBTNode *uncle = node -> parent -> parent -> left;
+                RBTNode *uncle = node -> parent -> parent -> left; // Uncle in left
                 // If uncle is red, recolour and if node's grandparent is not root, recolour and recheck
                 if (uncle && uncle -> colour == Red) {
                     node -> parent -> colour = Black;
@@ -150,7 +150,7 @@ private:
                     sibling -> right -> colour = Black; 
 
                     leftRotate(root, node -> parent);
-                    node = root;
+                    node = root; // To break out of loop
                 }
             } 
             // If node is right child (Symmetric to above)
@@ -184,7 +184,7 @@ private:
                     node -> parent -> colour = Black;
                     sibling -> left -> colour = Black;
                     rightRotate(root, node -> parent);
-                    node = root;
+                    node = root; // To break out of loop
                 }
             } 
         }
@@ -208,6 +208,7 @@ private:
     }
 
 public:
+    RBTNode* root = NULL;
     void insert(RBTNode *&root, int key) {
         RBTNode *newNode = new RBTNode(key);
         if (!root) {
@@ -325,20 +326,44 @@ public:
 
     int findPredecessor(RBTNode *root, int key) {
         RBTNode *node = searchNode(root, key);
-        if (node == NULL || node -> left == NULL) {
+        if (node == NULL) {
+            cout << "Key Not Found in Tree" << endl;
+            return -1;
+        }
+        if (node -> left) {
+            return findMax(node -> left);
+        }
+        RBTNode *par = node -> parent;
+        while (par && par -> left == node) {
+            node = par;
+            par = par -> parent;
+        }
+        if (par == NULL) {
             cout << "No Predecessor" << endl;
             return -1;
         }
-        return findMax(node -> left);
+        return par -> val;
     }
 
     int findSuccessor(RBTNode *root, int key) {
         RBTNode *node = searchNode(root, key);
-        if (node == NULL || node -> right == NULL) {
+        if (node == NULL) {
+            cout << "Key Not Found in Tree" << endl;
+            return -1;
+        }
+        if (node -> right) {
+            return findMin(node -> right);
+        }
+        RBTNode *par = node -> parent;
+        while (par && par -> right == node) {
+            node = par;
+            par = par -> parent;
+        }
+        if (par == NULL) {
             cout << "No Successor" << endl;
             return -1;
         }
-        return findMin(node -> right);
+        return par -> val;
     }
 
     void levelOrderTraversal(RBTNode *root) {
@@ -371,134 +396,21 @@ public:
 int main() {
     RedBlackTree rbt;
     RBTNode *root = NULL;
-    bool flag = true;
+    rbt.root = root;
 
-    vector<int> keys = {40, 20, 10, 30, 60, 50, 80, 70, 90, 99};
-    for (int i = 0; i < keys.size(); ++i) {
-        rbt.insert(root, keys[i]);
+    rbt.insert(rbt.root, 7);
+    rbt.insert(rbt.root, 3);
+    rbt.insert(rbt.root, 2);
+    rbt.insert(rbt.root,10);
+
+    rbt.deleteKey(rbt.root,3);
+    vector<int> inorder;
+    rbt.inorderTraversal(rbt.root,inorder);
+    for(auto i:inorder){
+        cout<<i<<' ';
     }
-    while (flag) {
-        cout << "\n\n1. Insert" << endl;
-        cout << "2. Search" << endl;
-        cout << "3. Delete" << endl;
-        cout << "4. Display Inorder Traversal" << endl;
-        cout << "5. Find Min" << endl;
-        cout << "6. Find Max" << endl;
-        cout << "7. Select" << endl;
-        cout << "8. Rank" << endl;
-        cout << "9. Find Predecessor" << endl;
-        cout << "10. Find Successor" << endl;
-        cout << "11. Level Order Traversal" << endl;
-        cout << "12. Exit" << endl;
+    cout<<endl;
 
-        int choice;
-        cout << "Enter your choice : ";
-        cin >> choice;
-        switch(choice) {
-            case 1: {
-                int key;
-                cout << "Enter the key to insert: ";
-                cin >> key;
-                rbt.insert(root, key);
-                break;
-            }
 
-            case 2: {
-                int key;
-                cout << "Enter the key to search: ";
-                cin >> key;
-                cout << (rbt.search(root, key) ? "Key Found" : "Key Not Found") << endl;
-                break;
-             }
 
-            case 3: {
-                int key;
-                cout << "Enter the key to delete: ";
-                cin >> key;
-                rbt.deleteKey(root, key);
-                break;
-            }
-
-            case 4: {
-                vector<int> inOrder;
-                rbt.inorderTraversal(root, inOrder);
-                cout << "Inorder Traversal: ";
-                for (int i = 0; i < inOrder.size(); ++i) {
-                    cout << inOrder[i] << " ";
-                }
-                cout << endl;
-                break;
-            }
-
-            case 5: {
-                int minVal = rbt.findMin(root);
-                if (minVal != -1) {
-                    cout << "Minimum Value: " << minVal << endl;
-                }
-                break;
-            }
-
-            case 6: {
-                int maxVal = rbt.findMax(root);
-                if (maxVal != -1) {
-                    cout << "Maximum Value: " << maxVal << endl;
-                }
-                break;
-            }
-
-            case 7: {
-                int k;
-                cout << "Enter the value of k: ";
-                cin >> k;
-                int kth = rbt.select(root, k);
-                if (kth != -1) {
-                    cout << "The kth smallest element is: " << kth << endl;
-                }
-                break;
-            }
-
-            case 8: {
-                int key;
-                cout << "Enter the key to find rank: ";
-                cin >> key;
-                int r = rbt.rank(root, key);
-                if (r != 0) {
-                    cout << "The rank of the key is: " << r << endl;
-                }
-                break;
-            }
-
-            case 9: {
-                int key;
-                cout << "Enter the key to find predecessor: ";
-                cin >> key;
-                int pred = rbt.findPredecessor(root, key);
-                if (pred != -1) {
-                    cout << "The predecessor of the key is: " << pred << endl;
-                }
-                break;
-            }
-
-            case 10: {
-                int key;
-                cout << "Enter the key to find successor: ";
-                cin >> key;
-                int succ = rbt.findSuccessor(root, key);
-                if (succ != -1) {
-                    cout << "The successor of the key is: " << succ << endl;
-                }
-                break;
-            }
-
-            case 11: {
-                rbt.levelOrderTraversal(root);
-                break;
-            }
-
-            case 12: {
-                flag = false;
-            }
-        }
-    }
-    return 0;
 }

@@ -256,7 +256,7 @@ int main()
     bst.insertKey(15);
     bst.insertKey(3);
     print(bst);
-    bst.deleteKey(5);
+    bst.deleteKey(10);
     print(bst);
     return 0;
 }
